@@ -1,3 +1,5 @@
+import MenuItem from "./entities/menu-item.entity";
+
 export class MenuItemsService {
 
   /* TODO: complete getMenuItems so that it returns a nested menu structure
@@ -75,7 +77,28 @@ export class MenuItemsService {
     ]
   */
 
-  async getMenuItems() {
-    throw new Error('TODO in task 3');
-  }
+    postProcessJavaScriptFunction = (menuItems: MenuItem[], id: Number | null = null): any => {
+        let menuItemsWithParent: MenuItem[] = [];
+        let processedItemsWithChildren: any = [];
+
+        for (let menuItem of menuItems) {
+            if (menuItem.parentId === id) {
+                menuItemsWithParent.push(menuItem);
+            }
+        }
+        
+        for (let menuItem of menuItemsWithParent) {
+            processedItemsWithChildren.push(
+            { ...menuItem,
+            children: this.postProcessJavaScriptFunction(menuItems, menuItem.id)}
+            )
+        }
+        return processedItemsWithChildren;
+    }
+
+    async getMenuItems() {
+            const menuItems = await MenuItem.findAll({ raw: true });
+            return this.postProcessJavaScriptFunction(menuItems);
+       
+    }
 }
